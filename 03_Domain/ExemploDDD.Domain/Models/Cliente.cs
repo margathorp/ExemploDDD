@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -19,11 +20,12 @@ namespace ExemploDDD.Domain.Models
         }
 
         public string Nome { get; private set; }
-        private List<Telefone> _telefones {get; set;}
+        private List<Telefone> _telefones;
         public IReadOnlyCollection<Telefone> Telefones  => _telefones.AsReadOnly();
 
         public void AddTelefone(Telefone telefone)
         {
+            AddNotifications(telefone);
             AddNotifications(new Contract()
                 .Requires()
                 .IsFalse(VerificarTelefoneExistente(telefone), "Cliente.Telefone", "Este telefone já existe")
@@ -36,7 +38,8 @@ namespace ExemploDDD.Domain.Models
 
         private bool VerificarTelefoneExistente(Telefone telefone)
         {
-            return _telefones.Any(x => x.Numero.Equals(telefone.Numero));
+            var teste = _telefones.Any(x => x.Numero.Equals(telefone.Numero));
+            return teste;
         }
         public override void Validar()
         {
@@ -44,6 +47,14 @@ namespace ExemploDDD.Domain.Models
                 .Requires()
                 .HasMinLen(Nome, 5, "Cliente.Nome", "O Nome do cliente deve ter no mínimo 5 caracteres")
             );
+        }
+
+        public void AddTelefones(List<Telefone> telefones)
+        {
+            foreach(var tel in telefones)
+            {
+                AddTelefone(tel);
+            }
         }
     }
 }

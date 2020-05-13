@@ -14,9 +14,7 @@ namespace ExemploDDD.Domain.Handlers
     public class ClienteHandler : 
         Notifiable, 
         IRequestHandler<CriarClienteCommand,ICommandResult>, 
-        IRequestHandler<CriarTelefoneCommand, ICommandResult>,
-        IRequestHandler<CriarTelefoneValidacaoCommand, ICommandResult>,
-        IRequestHandler<ObterTelefonesClienteCommand, ICommandResult>
+        IRequestHandler<CriarTelefoneCommand, ICommandResult>
     {
         private readonly IClienteRepository _clienteRepository;
         private readonly ITelefoneRepository _telefoneRepository;
@@ -30,18 +28,16 @@ namespace ExemploDDD.Domain.Handlers
 
         public async Task<ICommandResult> Handle(CriarClienteCommand command, CancellationToken cancellationToken)
         {
-            AddNotifications(command);
-            if(Invalid)
+            if(command.Invalid)
             {
-                return new CommandResult(false, "Dados Inválidos!", Notifications);                
+                return new CommandResult(false, "Dados Inválidos!", command.Notifications);                
             }
             
-            Cliente cliente = new Cliente(command.Nome);
-            
-            AddNotifications(cliente);
-            if(Invalid)
+            Cliente cliente = new Cliente(command.Nome);            
+            cliente.AddTelefones(command._telefones);
+            if(cliente.Invalid)
             {
-                return new CommandResult(false, "Dados Inválidos!", Notifications);                
+                return new CommandResult(false, "Dados Inválidos!", cliente.Notifications);                
             }
             await _clienteRepository.AddAsync(cliente);
 
@@ -50,59 +46,24 @@ namespace ExemploDDD.Domain.Handlers
 
         public async  Task<ICommandResult> Handle(CriarTelefoneCommand command, CancellationToken cancellationToken)
         {
-            AddNotifications(command);
-            if(Invalid)
+            if(command.Invalid)
             {
+                return new CommandResult(false, "Dados Inválidos!", command.Notifications);                
+            }
+            if(await _clienteRepository.PossuiTelefone(command.IdCliente, command.Numero))
+            {
+                AddNotification("Telefone.Numero", "O Cliente já possui este telefone");
                 return new CommandResult(false, "Dados Inválidos!", Notifications);                
             }
-
             Telefone telefone = new Telefone(command.IdCliente, command.Numero);
-            AddNotifications(telefone);
-            if(Invalid)
+            if(telefone.Invalid)
             {
-                return new CommandResult(false, "Dados Inválidos!", Notifications);                
+                return new CommandResult(false, "Dados Inválidos!", telefone.Notifications);                
             }
 
             await _telefoneRepository.AddAsync(telefone);
             
             return new CommandResult(true, $"O telefone {command.Numero} foi criado com sucesso!");
-        }
-
-        public async Task<ICommandResult> Handle(CriarTelefoneValidacaoCommand command, CancellationToken cancellationToken)
-        {
-            AddNotifications(command);
-            if(Invalid)
-            {
-                return new CommandResult(false, "Dados Inválidos!", Notifications);                
-            }
-            Cliente cliente = await _clienteRepository.GetByIdInclude(command.IdCliente);
-            if(cliente == null)
-                return new CommandResult(true, $"O telefone {command.Numero} foi criado com sucesso!");
-            
-            cliente.AddTelefone(new Telefone(command.IdCliente, command.Numero));
-
-            AddNotifications(cliente);
-            if(Invalid)
-            {
-                return new CommandResult(false, "Dados Inválidos!", Notifications);                
-            }
-            
-            await _clienteRepository.UpdateAsync(cliente);
-
-            return new CommandResult(true, $"O telefone {command.Numero} foi criado com sucesso!");
-        }
-
-        public async Task<ICommandResult> Handle(ObterTelefonesClienteCommand command, CancellationToken cancellationToken)
-        {
-            AddNotifications(command);
-            if(Invalid)
-            {
-                return new CommandResult(false, "Dados Inválidos!", Notifications);                
-            }
-            
-            return new CommandResultLista(_telefoneRepository.GetByIdUserAsync(command.IdCliente));
-
-        }
-        
+        }        
     }
 }

@@ -19,7 +19,7 @@ namespace ExemploDDD.Services.WebAPI.Controllers
         }
 
         [HttpPost]        
-        public async Task<IActionResult> CadastrarCliente(CriarClienteCommand command)
+        public async Task<IActionResult> CadastrarCliente([FromBody]CriarClienteCommand command)
         {   
             return Ok(await _mediator.Send(command));
         }
@@ -37,8 +37,5 @@ namespace ExemploDDD.Services.WebAPI.Controllers
             var command = new CriarTelefoneValidacaoCommand(id, numero);
             return Ok(await _mediator.Send(command));
         }
-
-        
-
     }
 }   

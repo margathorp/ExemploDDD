@@ -43,10 +43,10 @@ namespace ERP.Infra.Data.Repositories
 
         public async Task UpdateAsync(TEntity entity)
         {          
-            // _context.Attach(entity);  
-            // _context.Update<TEntity>(entity);                      
+            _context.Attach(entity);  
+            _context.Update<TEntity>(entity);                      
             _context.Entry(entity).State = EntityState.Modified;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

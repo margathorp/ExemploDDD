@@ -5,7 +5,7 @@ namespace ExemploDDD.Domain.Models
 {
     public class Telefone : EntityBase
     {
-        protected Telefone(){}
+        private Telefone(){}
         public Guid IdCliente { get; private set; }
         public string Numero { get; private set; }
         public Cliente Cliente {get;private set;}
@@ -19,6 +19,15 @@ namespace ExemploDDD.Domain.Models
         public Telefone(string numero)
         {
             Numero = numero;
+            ValidarNumero();
+        }
+
+        private void ValidarNumero()
+        {
+            AddNotifications(new Contract()
+                .Requires()
+                .IsNotNullOrEmpty(Numero, "Telefone.Numero", "Informe o número do telefone")
+            );
         }
 
         public void EditarTelefone(string numero)

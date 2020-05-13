@@ -7,7 +7,7 @@ namespace ExemploDDD.Domain.Models
     {
         public EntityBase()
         {
-            Id = Guid.NewGuid();
+            Id = Guid.NewGuid();            
         }
 
         public Guid Id {get;set;}

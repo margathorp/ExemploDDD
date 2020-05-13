@@ -22,5 +22,12 @@ namespace ERP.Infra.Data.Repositories
                         .Include(x => x.Telefones)
                         .FirstOrDefaultAsync(x => x.Id == id);
         }
+
+        public Task<bool> PossuiTelefone(Guid idCliente, string numero)
+        {
+            return _context.Telefones.AnyAsync(x => x.IdCliente == idCliente && x.Numero == numero);
+        }
+
+     
     }
 }
